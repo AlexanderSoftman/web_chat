@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title>
+            {{title}} - webchat
+        </title>
+    </head>
+    <body>
+        {% if title %}
+        <h1>
+           Hello, {{user.nickname}}! 
+        </h1>
+        {% else %}
+        <h1>
+           Welcome to webchat! 
+        </h1>
+        {% endif %}
+        {% for post in posts_history %}
+        <p>{{post.author.nickname}} says: <b> {{post.body}} </b></p>
+        {% endfor %}
+    </body>
+</html>
