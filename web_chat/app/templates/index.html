@@ -1,21 +1,30 @@
-<html>
-    <head>
-        <title>
-            {{title}} - webchat
-        </title>
-    </head>
-    <body>
-        {% if title %}
-        <h1>
-           Hello, {{user.nickname}}! 
-        </h1>
-        {% else %}
-        <h1>
-           Welcome to webchat! 
-        </h1>
-        {% endif %}
-        {% for post in posts_history %}
-        <p>{{post.author.nickname}} says: <b> {{post.body}} </b></p>
-        {% endfor %}
-    </body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+    <h1 id='test'> Hi, {{user.nickname}}! </h1>
+    <h1 id='test_2'> Hi, {{user.nickname}}! </h1>
+    {% for post in posts%}
+        <div><p> {{post.author.nickname}}: <b>{{post.body}}</b></p></div>
+    {% endfor %}
+    <script>
+    var counter = 0;
+    setInterval(
+        function() {
+            $('#test').text('' + counter);
+            counter += 1;
+            console.log('xxx');
+        },
+        1000);
+    setInterval(
+        function() {
+            $.ajax({
+                url: '/test',
+                type: 'GET',
+                success: function(response) {
+                    console.log("plus responce:" + response);
+                    $('#test_2').text('' + response);
+                }
+            });
+        },
+        1000);
+    </script>
+{% endblock %}
