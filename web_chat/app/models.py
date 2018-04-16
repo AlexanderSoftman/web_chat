@@ -1,10 +1,11 @@
 from app import db
+import flask_login
 
 ROLE_USER = 0
 ROLE_ADMIN = 1
 
 
-class User(db.Model):
+class User(db.Model, flask_login.UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
