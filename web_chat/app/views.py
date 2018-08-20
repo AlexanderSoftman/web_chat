@@ -4,6 +4,7 @@ import flask
 import app.forms as forms
 import app.models as models
 import flask_login
+import datetime
 
 LOG = logging.getLogger(__name__)
 
@@ -50,6 +51,10 @@ my_counter = {"counter": 0}
 @app.before_request
 def before_request():
     flask.g.user = flask_login.current_user
+    if flask.g.user.is_authenticated:
+        flask.g.user.last_seen = datetime.datetime.utcnow()
+        db.session.add(flask.g.user)
+        db.session.commit()
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -125,6 +130,8 @@ def after_login(resp):
         nickname = resp.nickname
         if nickname is None or nickname == "":
             nickname = resp.email.split('@')[0]
+        nickname = models.User.make_unique_nickname(
+            nickname)
         user = models.User(
             nickname=nickname,
             email=resp.email,
@@ -145,3 +152,47 @@ def after_login(resp):
 def load_user(user_id):
     return models.User.query.get(user_id)
 
+
+@app.route('/user/<nickname>')
+@flask_login.login_required
+def user(nickname):
+    user = models.User.query.filter_by(nickname=nickname).first()
+    if user is None:
+        flask.flash('User' + nickname + ' not found.')
+        return flask.redirect(flask.url_for('index'))
+    posts = [
+        {'author': user, 'body': 'Test post #1'},
+        {'author': user, 'body': 'Test post #2'}
+    ]
+    return flask.render_template(
+        'user.html',
+        user=user,
+        posts=posts)
+
+
+@app.route('/edit', methods=['GET', 'POST'])
+@flask_login.login_required
+def edit():
+    form = forms.EditForm()
+    if form.validate_on_submit():
+        flask.g.user.nickname = form.nickname.data
+        flask.g.user.about_me = form.about_me.data
+        db.session.add(flask.g.user)
+        db.session.commit()
+        flask.flash('Your changes have been saved')
+        return flask.redirect(flask.url_for('edit'))
+    else:
+        form.nickname.data = flask.g.user.nickname
+        form.about_me.data = flask.g.user.about_me
+    return flask.render_template('edit.html', form=form)
+
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return flask.render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return flask.render_template('500.html'), 500

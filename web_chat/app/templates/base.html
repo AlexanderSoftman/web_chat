@@ -8,15 +8,17 @@
         {% else %}
         <title>
             webchat
-        </title>>
+        </title>
         {% endif %}
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <meta charset="utf-8">
     </head>
     <body>
         <div> Webchat:
-            <a href="{{ url_for('index') }}">Home</a>
-            {% if g.get('user', None).is_authenticated %} | 
-            <a href="{{ url_for('logout') }}">Logout</a>
+            <a href="{{ url_for('index') }}" title="Go to home page">Home</a>
+            {% if g.get('user', None).is_authenticated %} 
+            | <a href="{{ url_for('user', nickname = g.get('user', None).nickname) }}" title="Go to your profile page">Your Profile</a>
+            | <a href="{{ url_for('logout') }}" title="Logout from website">Logout</a>
             {% endif %}
         </div>
         <hr>
